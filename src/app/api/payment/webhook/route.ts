@@ -35,9 +35,8 @@ export async function POST(req: NextRequest) {
           });
 
           await tx.payment.upsert({
-            where: { id: paymentEntity.id },
+            where: { transactionId: paymentEntity.id },
             create: {
-              id: paymentEntity.id,
               orderId,
               transactionId: paymentEntity.id,
               provider: 'RAZORPAY_WEBHOOK',
@@ -48,6 +47,37 @@ export async function POST(req: NextRequest) {
             },
             update: {
               status: 'SUCCESS',
+            },
+          });
+        });
+      }
+    } else if (eventName === 'payment.failed') {
+      const paymentEntity = payload.payment?.entity;
+      const orderNotes = paymentEntity?.notes || {};
+      const orderId = orderNotes.orderId;
+
+      if (orderId) {
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: orderId },
+            data: {
+              paymentStatus: 'FAILED',
+            },
+          });
+
+          await tx.payment.upsert({
+            where: { transactionId: paymentEntity.id },
+            create: {
+              orderId,
+              transactionId: paymentEntity.id,
+              provider: 'RAZORPAY_WEBHOOK',
+              method: paymentEntity.method || 'ONLINE',
+              amount: paymentEntity.amount / 100,
+              currency: 'INR',
+              status: 'FAILED',
+            },
+            update: {
+              status: 'FAILED',
             },
           });
         });
