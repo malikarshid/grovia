@@ -1,0 +1,871 @@
+// GROVIA - Prisma Relational Database Schema
+// India-Wide Scalable Grocery Marketplace
+// Fresh Living. Smarter Shopping.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  name                String
+  email               String    @unique
+  username            String?   @unique
+  phone               String?
+  passwordHash        String
+  role                String    @default("CUSTOMER") // CUSTOMER, ADMIN, SUPER_ADMIN, INVENTORY_MGR, ORDER_MGR, DELIVERY_MGR, RIDER
+  avatar              String?
+  isActive            Boolean   @default(true)
+  mustChangePassword  Boolean   @default(false)
+  isSuspended         Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockoutUntil        DateTime?
+  lastLoginAt         DateTime?
+  googleId            String?   @unique
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  customerProfile     CustomerProfile?
+  riderProfile        RiderProfile?
+  riderAssignments    RiderAssignment[]
+  riderEarnings       RiderEarning[]
+  riderSettlements    RiderSettlement[]
+  riderAvailabilities RiderAvailability[]
+  deliveriesHandled   Delivery[]        @relation("RiderDeliveries")
+  addresses           Address[]
+  orders              Order[]
+  favorites           Favorite[]
+  reviews             ProductReview[]
+  cart                Cart?
+  notifications       Notification[]
+  couponUsages        CouponUsage[]
+  auditLogs           AuditLog[]
+  shoppingLists       ShoppingList[]
+  locationPreferences CustomerLocationPreference[]
+}
+
+model CustomerProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  loyaltyPoints    Int      @default(0)
+  defaultAddressId String?
+  isMember         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String
+  phone        String
+  houseNumber  String
+  street       String
+  area         String
+  city         String   @default("Bengaluru")
+  state        String   @default("Karnataka")
+  pincode      String
+  landmark     String?
+  latitude     Float?
+  longitude    Float?
+  instructions String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  orders       Order[]
+}
+
+model CustomerLocationPreference {
+  id               String   @id @default(cuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pincode          String
+  city             String
+  state            String
+  area             String?
+  formattedAddress String?
+  latitude         Float?
+  longitude        Float?
+  serviceMode      String   @default("QUICK_LOCAL") // QUICK_LOCAL, NATIONWIDE, UNSERVICEABLE
+  isCurrent        Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
+
+// 30 Marketplace Departments
+model Department {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  description  String?
+  icon         String?
+  image        String?
+  displayOrder Int           @default(0)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  categories   Category[]
+  products     Product[]
+}
+
+model Category {
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  description  String?
+  image        String
+  displayOrder Int            @default(0)
+  isActive     Boolean        @default(true)
+  departmentId String?
+  department   Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id           String     @id @default(cuid())
+  name         String
+  slug         String     @unique
+  description  String?
+  image        String?
+  displayOrder Int        @default(0)
+  isActive     Boolean    @default(true)
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  products     Product[]
+}
+
+model Brand {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  logo         String?
+  description  String?
+  origin       String    @default("India")
+  isFeatured   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  products     Product[]
+}
+
+model Product {
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  description   String
+  categoryId    String
+  category      Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  departmentId  String?
+  department    Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  brandId       String?
+  brand         Brand?       @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  sku           String       @unique
+  barcode       String?
+  price         Float
+  originalPrice Float?
+  mrp           Float?
+  unit          String       // e.g., "1 kg", "500 g", "1 litre", "1 pack"
+  weight        Float        @default(1.0)
+  stock         Int          @default(0)
+  minStock      Int          @default(5)
+  isFeatured    Boolean      @default(false)
+  isBestSeller  Boolean      @default(false)
+  isOrganic     Boolean      @default(false)
+  isActive      Boolean      @default(true)
+  rating        Float        @default(4.5)
+  reviewCount   Int          @default(0)
+  image         String
+  expiryDate    DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  images                  ProductImage[]
+  reviews                 ProductReview[]
+  favorites               Favorite[]
+  cartItems               CartItem[]
+  inventory               Inventory?
+  stockMovements          StockMovement[]
+  supplierProducts        SupplierProduct[]
+  variants                ProductVariant[]
+  supplierOffers          SupplierOffer[]
+  priceHistories          PriceHistory[]
+  fulfilmentCentreProducts FulfilmentCentreProduct[]
+  shoppingListItems       ShoppingListItem[]
+}
+
+model ProductVariant {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  title      String   // e.g. "500 g", "1 kg", "5 kg", "Pack of 2"
+  sku        String   @unique
+  price      Float
+  mrp        Float
+  weight     Float
+  unit       String
+  stock      Int      @default(50)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  supplierOffers SupplierOffer[]
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false)
+  altText   String?
+}
+
+model ProductReview {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      @default(5)
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model DeliverySlot {
+  id          String   @id @default(cuid())
+  date        String   // YYYY-MM-DD
+  startTime   String   // HH:mm
+  endTime     String   // HH:mm
+  capacity    Int      @default(20)
+  bookedCount Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  orders      Order[]
+}
+
+model Order {
+  id             String        @id @default(cuid())
+  orderNumber    String        @unique
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  addressId      String
+  address        Address       @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  deliverySlotId String?
+  deliverySlot   DeliverySlot? @relation(fields: [deliverySlotId], references: [id], onDelete: SetNull)
+  subtotal       Float
+  discount       Float         @default(0)
+  deliveryFee    Float         @default(0)
+  tax            Float         @default(0)
+  total          Float
+  paymentMethod  String        @default("COD") // COD, UPI, CARD, DEMO
+  paymentStatus  String        @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  orderStatus    String        @default("PENDING") // PENDING, CONFIRMED, PROCESSING, PACKED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REFUND_PENDING, REFUNDED
+  channel        String        @default("WEB") // WEB, MOBILE, INSTORE
+  deliveryMode   String        @default("QUICK_LOCAL") // QUICK_LOCAL, NATIONWIDE_COURIER
+  deliveryOtp    String?       @default("4921")
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  items            OrderItem[]
+  payments         Payment[]
+  delivery         Delivery?
+  couponUsages     CouponUsage[]
+  shipment         Shipment?
+  riderAssignments RiderAssignment[]
+  riderEarnings    RiderEarning[]
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  productName String
+  unit        String
+  price       Float
+  quantity    Int
+  total       Float
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transactionId String   @unique
+  provider      String   @default("DEMO") // DEMO, RAZORPAY, COD
+  method        String   // UPI, CARD, NETBANKING, WALLET, CASH
+  amount        Float
+  currency      String   @default("INR")
+  status        String   // SUCCESS, FAILED, PENDING, REFUNDED
+  rawResponse   String?
+  createdAt     DateTime @default(now())
+}
+
+model Delivery {
+  id                  String               @id @default(cuid())
+  orderId             String               @unique
+  order               Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  trackingNumber      String               @unique
+  status              String               @default("PENDING") // PENDING, ASSIGNED, ACCEPTED, ARRIVED_AT_STORE, PICKED_UP, OUT_FOR_DELIVERY, ARRIVED_AT_CUSTOMER, DELIVERED, FAILED
+  riderId             String?
+  rider               User?                @relation("RiderDeliveries", fields: [riderId], references: [id], onDelete: SetNull)
+  deliveryPersonName  String?
+  deliveryPersonPhone String?
+  departureTime       DateTime?
+  estimatedDeliveryTime DateTime?
+  deliveredTime       DateTime?
+  notes               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  assignments         DeliveryAssignment[]
+  statusHistory       DeliveryStatusHistory[]
+  proof               DeliveryProof?
+  route               DeliveryRoute?
+}
+
+model DeliveryAssignment {
+  id         String    @id @default(cuid())
+  deliveryId String
+  delivery   Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  driverName String
+  driverPhone String
+  status     String    @default("ASSIGNED")
+  assignedAt DateTime  @default(now())
+}
+
+model Supplier {
+  id           String    @id @default(cuid())
+  name         String
+  company      String
+  email        String    @unique
+  phone        String
+  address      String
+  leadTimeDays Int       @default(2)
+  status       String    @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  products       SupplierProduct[]
+  inventories    Inventory[]
+  supplierOffers SupplierOffer[]
+}
+
+model SupplierProduct {
+  id               String   @id @default(cuid())
+  supplierId       String
+  supplier         Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  costPrice        Float
+  minOrderQuantity Int      @default(10)
+
+  @@unique([supplierId, productId])
+}
+
+// Multi-Supplier Price Engine & Offers
+model SupplierOffer {
+  id              String          @id @default(cuid())
+  supplierId      String
+  supplier        Supplier        @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId       String?
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  supplierPrice   Float
+  procurementCost Float
+  sellingPrice    Float
+  mrp             Float
+  stockAvailable  Int             @default(100)
+  leadTimeHours   Int             @default(2)
+  isCheapest      Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model PriceHistory {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplierId    String?
+  previousPrice Float
+  newPrice      Float
+  mrp           Float
+  reason        String?
+  createdAt     DateTime @default(now())
+}
+
+model ProductImport {
+  id          String   @id @default(cuid())
+  fileName    String
+  format      String   // CSV, JSON, EXCEL
+  totalRows   Int      @default(0)
+  successRows Int      @default(0)
+  failedRows  Int      @default(0)
+  status      String   @default("COMPLETED") // PENDING, PROCESSING, COMPLETED, FAILED
+  errorLog    String?
+  importedBy  String   @default("Admin")
+  createdAt   DateTime @default(now())
+}
+
+// Multi-Store Fulfilment & Dark Stores
+model FulfilmentCentre {
+  id                    String                    @id @default(cuid())
+  name                  String                    // e.g. "Bengaluru Central Dark Store", "Delhi Warehouse"
+  code                  String                    @unique
+  type                  String                    @default("DARK_STORE") // DARK_STORE (10-30m local), WAREHOUSE (Nationwide)
+  address               String
+  city                  String
+  state                 String
+  pincode               String
+  latitude              Float
+  longitude             Float
+  deliveryRadiusKm      Float                     @default(8.0)
+  operationalHours      String                    @default("06:00 AM - 11:30 PM")
+  capacityOrdersPerHour Int                       @default(100)
+  isActive              Boolean                   @default(true)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  products              FulfilmentCentreProduct[]
+  serviceablePinCodes   ServiceablePinCode[]
+  drivers               DeliveryPartner[]
+  riderProfiles         RiderProfile[]
+}
+
+model FulfilmentCentreProduct {
+  id                 String           @id @default(cuid())
+  fulfilmentCentreId String
+  fulfilmentCentre   FulfilmentCentre @relation(fields: [fulfilmentCentreId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  stock              Int              @default(0)
+  minThreshold       Int              @default(5)
+  bayLocation        String?
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([fulfilmentCentreId, productId])
+}
+
+// India-Wide PIN Code Serviceability
+model ServiceablePinCode {
+  id                       String            @id @default(cuid())
+  pincode                  String            @unique
+  city                     String
+  state                    String
+  district                 String?
+  deliveryMode             String            @default("QUICK_LOCAL") // QUICK_LOCAL, NATIONWIDE, UNSERVICEABLE
+  estimatedDeliveryMinutes Int               @default(20)
+  estimatedDeliveryDays    Int               @default(1)
+  fulfilmentCentreId       String?
+  fulfilmentCentre         FulfilmentCentre? @relation(fields: [fulfilmentCentreId], references: [id], onDelete: SetNull)
+  isActive                 Boolean           @default(true)
+}
+
+model DeliveryPricingRule {
+  id                    String   @id @default(cuid())
+  name                  String
+  minOrderValue         Float    @default(99.0)
+  standardDeliveryFee   Float    @default(99.0)
+  freeDeliveryThreshold Float    @default(499.0)
+  quickExpressFee       Float    @default(25.0)
+  smallOrderFee         Float    @default(20.0)
+  handlingFee           Float    @default(5.0)
+  isFreeDeliveryCampaign Boolean @default(false)
+  campaignDescription   String?
+  state                 String?  // null if nationwide default
+  isActive              Boolean  @default(true)
+}
+
+// Delivery Fleet & Live Tracking
+model DeliveryPartner {
+  id                   String            @id @default(cuid())
+  name                 String
+  phone                String            @unique
+  email                String?
+  vehicleType          String            @default("EV_BIKE") // EV_BIKE, MOTORCYCLE, SCOOTER, VAN
+  vehicleRegistration  String
+  status               String            @default("AVAILABLE") // OFFLINE, AVAILABLE, ASSIGNED, PICKING_UP, ON_THE_WAY, DELIVERED
+  currentLatitude      Float?
+  currentLongitude     Float?
+  lastLocationUpdate   DateTime?
+  fulfilmentCentreId   String?
+  fulfilmentCentre     FulfilmentCentre? @relation(fields: [fulfilmentCentreId], references: [id], onDelete: SetNull)
+  rating               Float             @default(4.8)
+  totalDeliveries      Int               @default(0)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  locationHistory      DriverLocation[]
+}
+
+model DriverLocation {
+  id         String          @id @default(cuid())
+  driverId   String
+  driver     DeliveryPartner @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  orderId    String?
+  latitude   Float
+  longitude  Float
+  speed      Float?
+  accuracy   Float?
+  timestamp  DateTime        @default(now())
+}
+
+// Nationwide Courier Integration (Shiprocket / Delhivery)
+model CourierProvider {
+  id           String     @id @default(cuid())
+  name         String
+  code         String     @unique // SHIPROCKET, DELHIVERY, BLUEDART
+  apiEndpoint  String?
+  isConfigured Boolean    @default(false)
+  isActive     Boolean    @default(true)
+
+  shipments    Shipment[]
+}
+
+model Shipment {
+  id                String           @id @default(cuid())
+  orderId           String           @unique
+  order             Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  courierProviderId String?
+  courierProvider   CourierProvider? @relation(fields: [courierProviderId], references: [id], onDelete: SetNull)
+  awbCode           String           @unique
+  courierName       String           @default("Standard Express")
+  originPin         String
+  destinationPin    String
+  status            String           @default("MANIFESTED") // MANIFESTED, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, RTO
+  estimatedArrival  DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+// Customer Shopping Lists (Buy Again, Monthly Basket)
+model ShoppingList {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String             // e.g. "Monthly Groceries", "Weekly Dairy"
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  items     ShoppingListItem[]
+}
+
+model ShoppingListItem {
+  id             String       @id @default(cuid())
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity       Int          @default(1)
+  addedAt        DateTime     @default(now())
+
+  @@unique([shoppingListId, productId])
+}
+
+model Inventory {
+  id              String    @id @default(cuid())
+  productId       String    @unique
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  currentStock    Int       @default(0)
+  minThreshold    Int       @default(10)
+  reorderQuantity Int       @default(50)
+  status          String    @default("IN_STOCK") // IN_STOCK, LOW_STOCK, OUT_OF_STOCK, NEEDS_REORDER
+  supplierId      String?
+  supplier        Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  leadTimeDays    Int       @default(2)
+  updatedAt       DateTime  @updatedAt
+}
+
+model StockMovement {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type          String   // IN (Restock), OUT (Sale), ADJUSTMENT, RETURN
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  reason        String
+  createdBy     String   @default("System")
+  createdAt     DateTime @default(now())
+}
+
+model Coupon {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  description    String
+  discountType   String        @default("PERCENTAGE") // PERCENTAGE, FIXED
+  discountValue  Float
+  minOrderAmount Float         @default(0)
+  maxDiscount    Float?
+  usageLimit     Int           @default(100)
+  usedCount      Int           @default(0)
+  startDate      DateTime      @default(now())
+  endDate        DateTime
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+
+  usages         CouponUsage[]
+}
+
+model CouponUsage {
+  id             String   @id @default(cuid())
+  couponId       String
+  coupon         Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  discountAmount Float
+  usedAt         DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?  // null if system broadcast
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, ORDER, PROMO, STOCK, ALERT
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model StaffRole {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  description String
+
+  permissions StaffPermission[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String
+  module      String
+
+  roles       StaffPermission[]
+}
+
+model StaffPermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  role         StaffRole  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model StoreSettings {
+  id                    String   @id @default(cuid())
+  storeName             String   @default("GROVIA")
+  storeEmail            String   @default("support@grovia.in")
+  storePhone            String   @default("+91 80 4965 2000")
+  storeAddress          String   @default("Grovia HQ, 12th Main, Indiranagar, Bengaluru, Karnataka 560038")
+  currency              String   @default("INR")
+  timezone              String   @default("Asia/Kolkata")
+  businessHours         String   @default("6:00 AM - 11:00 PM")
+  deliveryFee           Float    @default(30)
+  freeDeliveryThreshold Float    @default(499)
+  isDemoPayment         Boolean  @default(true)
+  taxRate               Float    @default(5.0) // 5% GST on groceries
+  updatedAt             DateTime @updatedAt
+}
+
+// ----------------------------------------------------------------------------
+// Dedicated Delivery Rider Models & Operations
+// ----------------------------------------------------------------------------
+
+model RiderProfile {
+  id                  String            @id @default(cuid())
+  userId              String            @unique
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleType         String            @default("EV_BIKE") // EV_BIKE, MOTORCYCLE, SCOOTER, BICYCLE
+  vehicleNumber       String            @default("KA-01-EV-2026")
+  drivingLicense      String?
+  rating              Float             @default(4.9)
+  totalDeliveries     Int               @default(0)
+  onTimeDeliveries    Int               @default(0)
+  isOnline            Boolean           @default(false)
+  currentLatitude     Float?
+  currentLongitude    Float?
+  lastLocationAt      DateTime?
+  bankAccountNumber   String?
+  bankIfscCode        String?
+  panNumber           String?
+  emergencyContact    String?
+  assignedDarkStoreId String?
+  assignedDarkStore   FulfilmentCentre? @relation(fields: [assignedDarkStoreId], references: [id], onDelete: SetNull)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model RiderAvailability {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isOnline     Boolean
+  sessionStart DateTime  @default(now())
+  sessionEnd   DateTime?
+  notes        String?
+}
+
+model RiderAssignment {
+  id              String    @id @default(cuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  riderId         String
+  rider           User      @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  status          String    @default("ASSIGNED") // ASSIGNED, ACCEPTED, REJECTED, ARRIVED_AT_STORE, PICKED_UP, OUT_FOR_DELIVERY, ARRIVED_AT_CUSTOMER, DELIVERED, CANCELLED
+  assignedAt      DateTime  @default(now())
+  acceptedAt      DateTime?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  rejectionReason String?
+  notes           String?
+}
+
+model RiderEarning {
+  id           String           @id @default(cuid())
+  riderId      String
+  rider        User             @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  orderId      String?
+  order        Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  settlementId String?
+  settlement   RiderSettlement? @relation(fields: [settlementId], references: [id], onDelete: SetNull)
+  baseFee      Float            @default(40.0) // Flat ₹40 per trip
+  distanceFee  Float            @default(15.0) // ₹15 per km beyond 2km
+  surgeBonus   Float            @default(0.0)  // Peak hour incentive
+  tipAmount    Float            @default(0.0)  // Customer tip
+  deductions   Float            @default(0.0)
+  netAmount    Float            // baseFee + distanceFee + surgeBonus + tipAmount - deductions
+  status       String           @default("PENDING") // PENDING, APPROVED, SETTLED
+  earnedDate   String           // YYYY-MM-DD
+  createdAt    DateTime         @default(now())
+}
+
+model RiderSettlement {
+  id               String         @id @default(cuid())
+  riderId          String
+  rider            User           @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  settlementCode   String         @unique // e.g. STL-2026-W48-001
+  periodStart      DateTime
+  periodEnd        DateTime
+  totalTrips       Int
+  grossEarnings    Float
+  deductions       Float          @default(0.0)
+  netPayable       Float
+  status           String         @default("PENDING") // PENDING, PROCESSING, PAID, FAILED
+  paymentReference String?        // Bank reference / UTR
+  paidAt           DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  earnings         RiderEarning[]
+}
+
+model DeliveryStatusHistory {
+  id         String   @id @default(cuid())
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status     String   // ASSIGNED, ACCEPTED, ARRIVED_AT_STORE, PICKED_UP, OUT_FOR_DELIVERY, ARRIVED_AT_CUSTOMER, DELIVERED, FAILED
+  timestamp  DateTime @default(now())
+  latitude   Float?
+  longitude  Float?
+  notes      String?
+  updatedBy  String?  // Rider or Admin ID
+}
+
+model DeliveryProof {
+  id                String   @id @default(cuid())
+  deliveryId        String   @unique
+  delivery          Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  otpVerified       Boolean  @default(false)
+  otpCode           String?
+  recipientName     String?
+  photoUrl          String?
+  customerSignature String?
+  failureReason     String?
+  confirmedAt       DateTime @default(now())
+}
+
+model DeliveryRoute {
+  id               String   @id @default(cuid())
+  deliveryId       String   @unique
+  delivery         Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  pickupLat        Float
+  pickupLng        Float
+  dropoffLat       Float
+  dropoffLng       Float
+  distanceKm       Float
+  estimatedMinutes Int
+  waypointsJson    String?
+  createdAt        DateTime @default(now())
+}
