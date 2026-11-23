@@ -293,4 +293,235 @@ describe('GROVIA Core Services, Health Check & External Architecture Verificatio
     expect(liveManifest.isLiveIntegration).toBe(true);
     delete process.env.DELHIVERY_API_TOKEN;
   });
+
+  it('8. Public order tracking strictly hides delivery OTP and masks PII for unauthenticated callers', async () => {
+    const { GET: trackingHandler } = await import('@/app/api/driver/tracking/[orderId]/route');
+    const prisma = (await import('@/lib/prisma')).default;
+    const { generateToken } = await import('@/lib/auth');
+
+    const customer = await prisma.user.findFirst({ where: { role: 'CUSTOMER' } });
+    const address = await prisma.address.findFirst();
+
+    if (customer && address) {
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-TRACK-SEC-${Date.now()}`,
+          userId: customer.id,
+          addressId: address.id,
+          subtotal: 300,
+          total: 300,
+          orderStatus: 'CONFIRMED',
+          deliveryOtp: '7788',
+        },
+      });
+
+      // 1. Unauthenticated request - must NOT have verificationOtp and address must be masked
+      const unauthReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/driver/tracking/${order.id}`);
+      const unauthRes = await trackingHandler(unauthReq, { params: { orderId: order.id } });
+      expect(unauthRes.status).toBe(200);
+
+      const unauthJson = await unauthRes.json();
+      expect(unauthJson.verificationOtp).toBeUndefined();
+      expect(unauthJson.order.customerName).toContain('*');
+      expect(unauthJson.order.shippingAddress).not.toContain(address.houseNumber);
+
+      // 2. Authenticated request as owner - must include verificationOtp
+      const ownerToken = generateToken({
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        role: customer.role as any,
+      });
+
+      const authReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/driver/tracking/${order.id}`, {
+        headers: {
+          Authorization: `Bearer ${ownerToken}`,
+        },
+      });
+      const authRes = await trackingHandler(authReq, { params: { orderId: order.id } });
+      expect(authRes.status).toBe(200);
+
+      const authJson = await authRes.json();
+      expect(authJson.verificationOtp).toBe('7788');
+      expect(authJson.order.customerName).toBe(customer.name);
+    }
+  });
+
+  it('9. Customer order cancellation restores product stock and marks prepaid orders as REFUNDED', async () => {
+    const { PATCH: patchOrderHandler } = await import('@/app/api/orders/[id]/route');
+    const prisma = (await import('@/lib/prisma')).default;
+    const { generateToken } = await import('@/lib/auth');
+
+    const customer = await prisma.user.findFirst({ where: { role: 'CUSTOMER' } });
+    const address = await prisma.address.findFirst();
+    const product = await prisma.product.findFirst({ where: { stock: { gt: 5 } } });
+
+    if (customer && address && product) {
+      const initialStock = product.stock;
+
+      // Create an order with 2 units deducted
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-CANCEL-TEST-${Date.now()}`,
+          userId: customer.id,
+          addressId: address.id,
+          subtotal: product.price * 2,
+          total: product.price * 2,
+          orderStatus: 'PENDING',
+          paymentStatus: 'PAID',
+          items: {
+            create: [
+              {
+                productId: product.id,
+                productName: product.name,
+                unit: product.unit,
+                price: product.price,
+                quantity: 2,
+                total: product.price * 2,
+              },
+            ],
+          },
+        },
+      });
+
+      // Deduct stock for the test
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { stock: initialStock - 2 },
+      });
+
+      const customerToken = generateToken({
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        role: customer.role as any,
+      });
+
+      // Customer cancels order
+      const cancelReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${customerToken}`,
+        },
+        body: JSON.stringify({
+          orderStatus: 'CANCELLED',
+          cancellationReason: 'Changed mind before dispatch',
+        }),
+      });
+
+      const cancelRes = await patchOrderHandler(cancelReq, { params: { id: order.id } });
+      expect(cancelRes.status).toBe(200);
+
+      // Verify stock restored in database
+      const restoredProduct = await prisma.product.findUnique({ where: { id: product.id } });
+      expect(restoredProduct?.stock).toBe(initialStock);
+
+      // Verify payment marked as REFUNDED
+      const updatedOrder = await prisma.order.findUnique({ where: { id: order.id } });
+      expect(updatedOrder?.orderStatus).toBe('CANCELLED');
+      expect(updatedOrder?.paymentStatus).toBe('REFUNDED');
+    }
+  });
+
+  it('10. Rider order details do not expose customer OTP, and duplicate delivery completion is prevented', async () => {
+    const { GET: getRiderOrderDetail } = await import('@/app/api/rider/orders/[id]/route');
+    const { POST: updateStatusHandler } = await import('@/app/api/rider/orders/[id]/status/route');
+    const prisma = (await import('@/lib/prisma')).default;
+    const { generateToken } = await import('@/lib/auth');
+
+    const riderUser = await prisma.user.findFirst({ where: { role: 'RIDER' } });
+    const customer = await prisma.user.findFirst({ where: { role: 'CUSTOMER' } });
+    const address = await prisma.address.findFirst();
+
+    if (riderUser && customer && address) {
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-RIDER-SEC-${Date.now()}`,
+          userId: customer.id,
+          addressId: address.id,
+          subtotal: 400,
+          total: 400,
+          orderStatus: 'PROCESSING',
+          deliveryOtp: '9182',
+          delivery: {
+            create: {
+              trackingNumber: `TRK-SEC-${Date.now()}`,
+              status: 'ACCEPTED',
+              riderId: riderUser.id,
+            },
+          },
+          riderAssignments: {
+            create: {
+              riderId: riderUser.id,
+              status: 'ACCEPTED',
+            },
+          },
+        },
+        include: { riderAssignments: true, delivery: true },
+      });
+
+      const riderToken = generateToken({
+        id: riderUser.id,
+        name: riderUser.name,
+        email: riderUser.email,
+        role: riderUser.role as any,
+      });
+
+      // 1. Rider order detail query must NOT contain delivery OTP
+      const detailReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/rider/orders/${order.id}`, {
+        headers: {
+          Authorization: `Bearer ${riderToken}`,
+        },
+      });
+
+      const detailRes = await getRiderOrderDetail(detailReq, { params: { id: order.id } });
+      expect(detailRes.status).toBe(200);
+
+      const detailJson = await detailRes.json();
+      expect(detailJson.order.delivery.verificationOtp).toBeUndefined();
+      expect(detailJson.order.delivery.requiresOtp).toBe(true);
+
+      // 2. Deliver the order with OTP
+      const deliverReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/rider/orders/${order.id}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${riderToken}`,
+        },
+        body: JSON.stringify({
+          nextStatus: 'DELIVERED',
+          otp: '9182',
+        }),
+      });
+
+      const deliverRes = await updateStatusHandler(deliverReq, { params: { id: order.id } });
+      expect(deliverRes.status).toBe(200);
+
+      // 3. Duplicate delivery attempt must return early without error or duplicate earnings
+      const duplicateReq = new (await import('next/server')).NextRequest(`http://localhost:3000/api/rider/orders/${order.id}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${riderToken}`,
+        },
+        body: JSON.stringify({
+          nextStatus: 'DELIVERED',
+          otp: '9182',
+        }),
+      });
+
+      const duplicateRes = await updateStatusHandler(duplicateReq, { params: { id: order.id } });
+      expect(duplicateRes.status).toBe(200);
+
+      const dupJson = await duplicateRes.json();
+      expect(dupJson.status).toBe('DELIVERED');
+
+      // Verify single earning record in database
+      const earningsCount = await prisma.riderEarning.count({
+        where: { orderId: order.id, riderId: riderUser.id },
+      });
+      expect(earningsCount).toBe(1);
+    }
+  });
 });

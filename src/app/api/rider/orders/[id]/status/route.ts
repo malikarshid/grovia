@@ -58,6 +58,15 @@ async function handleStatusUpdate(
       return NextResponse.json({ error: 'Order assignment not found for this rider' }, { status: 404 });
     }
 
+    // Prevent duplicate delivery completion and duplicate earnings
+    if (assignment.status === 'DELIVERED') {
+      return NextResponse.json({
+        message: 'Order has already been completed and delivered',
+        assignment,
+        status: 'DELIVERED',
+      });
+    }
+
     // Handle Cancellation / Rejection
     if (targetStatus === 'REJECTED' || targetStatus === 'CANCELLED') {
       await prisma.riderAssignment.update({

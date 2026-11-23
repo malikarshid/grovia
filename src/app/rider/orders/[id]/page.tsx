@@ -153,7 +153,6 @@ export default function RiderOrderDetailPage({
   const { assignment, order } = data;
   const currentStatus = assignment.status;
   const isDelivered = currentStatus === 'DELIVERED';
-  const expectedOtp = order.delivery?.verificationOtp || '9682';
 
   // Get current step index
   const currentIndex = STEPS.indexOf(currentStatus);
@@ -443,8 +442,8 @@ export default function RiderOrderDetailPage({
                 className="w-full text-center tracking-[0.5em] text-2xl font-black bg-slate-900 border border-slate-700 rounded-xl py-3 text-white focus:outline-none focus:border-[#4CAF50]"
                 autoFocus
               />
-              <p className="text-[10px] text-slate-500 text-center mt-2">
-                Order Delivery OTP: <strong className="text-emerald-400 font-mono">{expectedOtp}</strong>
+              <p className="text-[10px] text-slate-400 text-center mt-2">
+                Ask customer for the 4-digit code shown on their tracking screen
               </p>
             </div>
 

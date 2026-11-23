@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
@@ -36,6 +37,9 @@ export async function GET(
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
+
+    const session = getSessionFromRequest(req);
+    const isOwnerOrAdmin = Boolean(session && (session.id === order.userId || (session.role && ['ADMIN', 'SUPER_ADMIN'].includes(session.role))));
 
     // Check if order has nationwide courier shipment
     if (order.shipment) {
@@ -115,9 +119,18 @@ export async function GET(
       ? 'DELIVERED'
       : (order.delivery?.status || (order.orderStatus === 'CONFIRMED' ? 'PROCESSING' : order.orderStatus));
 
-    const customerAddress = order.address
+    const fullAddress = order.address
       ? `${order.address.houseNumber || ''} ${order.address.street || ''}, ${order.address.area || ''}, ${order.address.city || ''} ${order.address.pincode || ''}`.trim()
       : 'Customer Delivery Address';
+
+    const maskedAddress = order.address
+      ? `${order.address.area ? order.address.area + ', ' : ''}${order.address.city || 'Bengaluru'} ${order.address.pincode || ''}`.trim()
+      : 'Service Area';
+
+    const customerAddress = isOwnerOrAdmin ? fullAddress : maskedAddress;
+    const customerDisplayName = isOwnerOrAdmin
+      ? (order.user?.name || 'Valued Customer')
+      : (order.user?.name ? (order.user.name[0] + '***') : 'Customer');
 
     return NextResponse.json({
       type: order.deliveryMode || 'QUICK_LOCAL',
@@ -125,14 +138,14 @@ export async function GET(
       orderStatus: order.orderStatus,
       deliveryStatus: order.delivery?.status || 'OUT_FOR_DELIVERY',
       currentStage,
-      verificationOtp: order.deliveryOtp || '4921',
+      verificationOtp: isOwnerOrAdmin ? (order.deliveryOtp || '4921') : undefined,
       order: {
         id: order.id,
         orderNumber: order.orderNumber,
         deliveryType: order.deliveryMode === 'NATIONWIDE_COURIER' ? 'EXPRESS' : 'QUICK',
-        customerName: order.user?.name || 'Valued Customer',
+        customerName: customerDisplayName,
         shippingAddress: customerAddress,
-        total: order.total,
+        total: isOwnerOrAdmin ? order.total : undefined,
         orderStatus: order.orderStatus,
       },
       rider: riderObj,

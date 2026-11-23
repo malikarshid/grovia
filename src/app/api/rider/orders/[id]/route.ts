@@ -12,6 +12,10 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized rider session' }, { status: 401 });
     }
 
+    if (session.role !== 'RIDER' && session.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Access denied. Rider privileges required.' }, { status: 403 });
+    }
+
     const { id } = params;
 
     const assignment = await prisma.riderAssignment.findFirst({
@@ -20,6 +24,7 @@ export async function GET(
           { id: id },
           { orderId: id },
         ],
+        ...(session.role === 'SUPER_ADMIN' ? {} : { riderId: session.id }),
       },
       include: {
         order: {
@@ -88,7 +93,7 @@ export async function GET(
         items: assignment.order.items,
         delivery: {
           ...assignment.order.delivery,
-          verificationOtp: assignment.order.deliveryOtp || '9682',
+          requiresOtp: true, // Rider knows OTP is required at doorstep, but NEVER sees the secret OTP!
         },
         hub: hub ? {
           name: hub.name,
