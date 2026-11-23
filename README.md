@@ -1,140 +1,202 @@
 # GROVIA — Fresh Living. Smarter Shopping.
 
-A premier full-stack, India-wide grocery marketplace and quick commerce operations platform inspired by Zepto, Blinkit, BigBasket, and JioMart.
+A modern, full-stack grocery shopping and hyper-local marketplace platform designed for high-concurrency order processing, multi-department grocery catalog browsing, dark store inventory fulfillment, and dedicated delivery rider operations across India.
 
-![GROVIA Marketplace Banner](https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80)
-
----
-
-## 🌟 Overview
-
-**GROVIA** delivers a complete end-to-end grocery ecosystem combining a fast, hyper-local consumer marketplace with an enterprise multi-store dark store and nationwide logistics dashboard. Operating across India in Indian Rupees (`₹`), GROVIA features 30 specialized grocery departments, multi-supplier price comparison engines, 10–30 minute quick dark store delivery, nationwide courier shipping via Shiprocket/Delhivery integration, and live GPS driver tracking.
-
-- **Customer Storefront:** `http://localhost:3000` (Zero administrative exposure)
-- **Private Admin Portal:** `http://localhost:3000/admin/login` (`admin_me` / `9682pw`)
-- **Dedicated Delivery Rider Portal:** `http://localhost:3000/rider/login` (`rider_me` / `Rider@9682pw`)
-- **Default Currency:** INR (`₹`)
-- **Default Market:** India (Active Hubs: Bengaluru, Mumbai, Delhi NCR, Hyderabad, Pune, Nagpur)
-
-### 📚 Documentation Guides
-- [GROVIA_COMPLETION_REPORT.md](file:///c:/Project/Grovia/GROVIA_COMPLETION_REPORT.md): Final Master Completion Report
-- [RIDER_PORTAL_GUIDE.md](file:///c:/Project/Grovia/RIDER_PORTAL_GUIDE.md): Dedicated Rider Portal Operations Guide
-- [ADMIN_GUIDE.md](file:///c:/Project/Grovia/ADMIN_GUIDE.md): Private Administration Portal Guide
-- [SECURITY_AUDIT.md](file:///c:/Project/Grovia/SECURITY_AUDIT.md): Security Architecture & RBAC Audit Report
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Tests-100%25_Passing-4CAF50?logo=vitest&logoColor=white)](./GROVIA_TEST_REPORT.md)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 ---
 
-## 🎨 Brand Identity & Design System
+## 1. Project Overview
 
-Rooted in fresh, trustworthy grocery commerce:
-- **Primary Brand Green:** `#2E7D32`
-- **Accent Action Orange:** `#FF6F00`
-- **Light Background:** `#FAFAFA`
-- **Card Surface:** `#FFFFFF`
-- **Error & Alert Red:** `#E53935`
+GROVIA is built from the ground up to support the fast-paced grocery shopping experience inspired by platforms like Zepto, Blinkit, and BigBasket. It provides three distinctly isolated user experiences powered by a unified Next.js 14 backend and Prisma database:
 
-### 3 Display Themes
-1. **Light Mode:** High-contrast crisp white surfaces with fresh emerald accents.
-2. **Dark Mode:** Deep slate surfaces (`#0F172A`) for low-light browsing.
-3. **Eye Protection Mode:** Warm sepia/cream background (`#FBF7EE`) engineered to reduce blue-light glare and eye strain.
+1. **Customer Storefront:** Hyperlocal grocery shopping with 10-15 minute instant delivery and nationwide surface express options, dynamic search, multi-department catalog, coupons, and live tracking.
+2. **Administration Operations Portal:** Real-time business management dashboard with inventory movements, product catalog CRUD, order fulfillment, delivery partner dispatching, staff permissions, and immutable audit logs.
+3. **Dedicated Delivery Rider Portal:** Dedicated mobile-first interface for delivery partners to manage online/offline duty status, accept/decline orders, follow navigation routes, perform OTP-verified drop-offs, and track earnings ledgers.
 
 ---
 
-## 🇮🇳 India-Wide Marketplace Capabilities
+## 2. Key Features Across Experiences
 
-### 1. 30 Marketplace Departments
-Supports scalable cataloging with subcategories and brand entities:
-1. Fruits and Vegetables
-2. Dairy, Bread and Eggs
-3. Atta, Rice and Dal
-4. Masala, Oil and Dry Fruits
-5. Snacks and Munchies
-6. Cold Drinks and Juices
-7. Breakfast and Instant Food
-8. Bakery and Biscuits
-9. Chocolates and Sweets
-10. Tea and Coffee
-11. Meat, Fish and Seafood
-12. Frozen Food
-13. Baby Care
-14. Personal Care
-15. Beauty and Hygiene
-16. Bath and Body
-17. Cleaning Essentials
-18. Household Supplies
-19. Kitchen Essentials
-20. Pet Care
-21. Health and Wellness
-22. Organic and Natural Products
-23. Regional Indian Foods
-24. Pooja Essentials
-25. Stationery and Daily Needs
-26. Packaged Food
-27. Home and Lifestyle
-28. Seasonal Products
-29. Festival Essentials
-30. Other Grocery Products
+### A. Customer Storefront
+- **Department Browsing:** 16 primary departments covering Fresh Fruits, Dairy, Atta & Dal, Organic Groceries, Meat & Seafood, and Home Care.
+- **Serviceability Check:** Dynamic 6-digit Indian PIN code validation routing orders to either local 10-15 min quick delivery or nationwide 2-4 day surface express.
+- **Smart Cart & Checkout:** Server-validated subtotals, free delivery progress indicators, coupon code validation, and multi-address management.
+- **Visual Order Tracking:** Live order progress timeline (`PENDING` → `CONFIRMED` → `PROCESSING` → `ASSIGNED` → `OUT_FOR_DELIVERY` → `ARRIVED` → `DELIVERED`) with driver contact details and customer delivery verification OTP.
 
-### 2. Multi-Size Product Variants
-- Pack sizes (e.g. `250g`, `500g`, `1kg`, `5kg`, `10kg`, multipacks) linked to base SKUs without record duplication.
-- Interactive variant chips on product cards and detail pages with instant price, stock, and unit switching.
+### B. Administrative Management Portal
+- **Dashboard Metrics:** Real-time revenue figures, order volume graphs, active delivery count, and out-of-stock inventory alerts.
+- **Catalog & Inventory Engine:** Multi-variant product creation, category management, batch stock adjustments, and automatic inventory movements tracking.
+- **Rider Fleet Operations:** Live rider duty tracking, manual and automated order assignment, rider earnings settlement, and performance metrics.
+- **Security & Governance:** Edge Middleware route guards, role-based access control (`SUPER_ADMIN`, `ADMIN`, `INVENTORY_MGR`, `ORDER_MGR`), and detailed immutable audit logs.
 
-### 3. Multi-Supplier Price Engine & Smart Price
-- Connects verified wholesale distributors (e.g. Bangalore Wholesale FMCG Mart, Metro Cash & Carry, Reliance Consumer Direct).
-- Automatic lowest-price detection flagging the cheapest offer with the **"★ Lowest Price / Smart Price"** badge and transparent supplier comparisons.
-
-### 4. Location & PIN Code Serviceability Engine
-- **HTML5 Geolocation Auto-Detection:** Distance calculations (Haversine) to the nearest dark store with instant ETA estimation.
-- **6-Digit Indian PIN Code Routing:** Immediate resolution between:
-  - `⚡ QUICK_LOCAL`: 15–25 min hyper-local dark store delivery.
-  - `📦 NATIONWIDE`: 2–4 days express surface courier delivery.
-- Interactive location selector in header with metro presets (Indiranagar, Koramangala, Andheri West, DLF Cyber City, HITEC City).
-
-### 5. Multi-Store Fulfilment Network
-- **Dark Stores:** Hyper-local micro-warehouses (e.g. `BLR-IND-01`, `BOM-AND-01`, `DEL-GUR-01`, `HYD-HIT-01`) optimized for sub-30 minute fulfillment.
-- **National Warehouses:** Central distribution hubs (e.g. `NAT-NAG-01`) powering nationwide surface courier shipments.
-
-### 6. Live Delivery Fleet & GPS Tracking
-- Real-time driver GPS tracking panel with moving driver coordinates, telemetry speed, route checkpoints, and driver contact.
-- Nationwide AWB courier timeline tracking (Manifested → In Transit → Out for Delivery → Delivered).
+### C. Delivery Rider Portal
+- **Duty Availability Switch:** Real-time Online/Offline toggle with database persistence across refreshes and active-order lockout protection.
+- **Order Management:** View incoming tasks, accept/decline assignments, review product checklists, and navigate to dark store hubs and customer drop-offs.
+- **Cryptographic Delivery OTP:** Mandatory customer verification OTP required before marking orders as delivered, eliminating unauthorized drop-offs.
+- **Earnings Ledger:** Detailed financial summaries including base pay, distance compensation, peak surge bonuses, and customer tips.
 
 ---
 
-## 🛠 Admin & Operations Modules
+## 3. Technology Stack
 
-1. **Dashboard:** Real-time business KPIs, revenue, and order sources.
-2. **Marketplace SKUs (`/admin/marketplace`):** Complete catalogue across 30 departments with variant matrices and supplier pricing.
-3. **Fulfilment Centres (`/admin/fulfilment-centres`):** Dark store management, capacity tracking, delivery radiuses, and stock bay locations.
-4. **PIN Serviceability (`/admin/serviceability`):** Serviceable PIN code directory with delivery mode routing.
-5. **Delivery Pricing Rules (`/admin/pricing-rules`):** Configurable small order fees, express fees, free delivery campaigns, and min basket sizes.
-6. **Fleet Tracking (`/admin/fleet-tracking`):** Live radar map displaying driver telemetry, EV bike assignments, and delivery stats.
-7. **Supplier Imports (`/admin/supplier-imports`):** Batch JSON / CSV bulk catalogue ingestion with error validation and history audit logs.
-8. **Orders & Inventory:** Stock movements, reservations, and refund management.
-9. **Promotions & Staff Management:** RBAC, coupons, and customer loyalty CRM.
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript 5 (Strict Mode enabled)
+- **Database ORM:** Prisma ORM v5.22.0
+- **Database Engine:** Dual-mode architecture supporting SQLite 3 locally and PostgreSQL 14+ in production
+- **Styling:** Tailwind CSS with custom brand themes (`#2E7D32`, `#FF6F00`, `#E53935`)
+- **Theme Modes:** Light Mode, Dark Mode, and Eye Protection Warm Mode (`#FBF7EE`)
+- **Authentication:** Edge WebCrypto JWT sessions with HTTP-only cookies and bcryptjs password hashing
+- **Testing:** Vitest v2.1.9 with `@testing-library/react` and `jsdom`
 
 ---
 
-## 🧪 Testing & Verification
+## 4. Project Directory Structure
 
-- **Vitest Test Suite:** 32 passing tests (Unit, Integration, E2E)
-- **TypeScript:** Strict type checking with 0 errors (`npx tsc --noEmit`)
-- **Production Build:** 66/66 Next.js dynamic and static routes built successfully (`npm run build`)
-
-```bash
-# Run unit & integration tests
-npm test
-
-# Run production build
-npm run build
-
-# Start production server
-npm start
+```
+Grovia/
+├── prisma/
+│   ├── schema.prisma               # Active development schema (SQLite)
+│   ├── schema.postgresql.prisma    # Production target schema (PostgreSQL)
+│   ├── migrations/                 # Pre-compiled DDL migration scripts
+│   ├── seed.js                     # Primary store catalog seed script
+│   ├── seed-marketplace.js         # Comprehensive 16-department catalog seed
+│   └── seed-security-riders.js     # Administrative and rider roster seed
+├── src/
+│   ├── app/
+│   │   ├── (store)/                # Customer Storefront routes
+│   │   ├── admin/                  # Administrative Management routes
+│   │   ├── rider/                  # Dedicated Rider Portal routes
+│   │   ├── api/                    # REST API route handlers
+│   │   │   ├── auth/               # Customer, Admin & Rider auth handlers
+│   │   │   ├── rider/              # Rider availability, orders & earnings
+│   │   │   ├── payment/            # Razorpay order generation & webhooks
+│   │   │   ├── logistics/          # Courier manifestation & tracking
+│   │   │   └── health/             # System health & telemetry endpoint
+│   │   └── layout.tsx              # Root HTML and metadata layout
+│   ├── components/                 # Reusable UI component library
+│   ├── lib/                        # Prisma client, auth, and formatting utilities
+│   ├── services/                   # Payment, Maps, and Courier service abstractions
+│   └── store/                      # Zustand client-side state stores
+├── tests/                          # Automated unit, integration, and E2E test suites
+└── scripts/                        # Database migration and synchronization tools
 ```
 
 ---
 
-## 👥 Default Credentials
+## 5. Getting Started & Installation
 
-- **Super Admin:** `admin@grovia.in` / `Grovia@Admin2026`
-- **Inventory Manager:** `inventory@grovia.in` / `Grovia@Staff2026`
-- **Customer:** `rahul.sharma@example.com` / `Customer@123`
+### Prerequisites
+- Node.js v18.17+ or v20+
+- npm v9+
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/malikarshid/Grovia.git
+cd Grovia
+```
+
+### Step 2: Install Dependencies
+```bash
+npm install
+```
+
+### Step 3: Setup Environment Configuration
+Copy the template to create your local `.env`:
+```bash
+cp .env.example .env
+```
+
+### Step 4: Initialize & Seed Database
+```bash
+# Push schema to local SQLite database
+npx prisma db push
+
+# Run idempotent seeds
+npm run prisma:seed
+```
+
+### Step 5: Start Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 6. Development & Quality Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Run full automated test suite (10 test suites, 66+ tests)
+npm test
+
+# Run strict TypeScript compilation check (0 errors)
+npx tsc --noEmit
+
+# Validate Prisma schema
+npx prisma validate
+
+# Compile optimized production build
+npm run build
+
+# Start production server
+npm run start
+
+# Free port 3000 if occupied by a background process
+npm run clean:ports
+```
+
+---
+
+## 7. Project Documentation Index
+
+Detailed architectural and operational documentation is available in the repository:
+
+- [GROVIA Technical Completion Report](./GROVIA_COMPLETION_REPORT.md)
+- [Master Technical Audit & Verification](./GROVIA_MASTER_AUDIT.md)
+- [Automated Test Execution Report](./GROVIA_TEST_REPORT.md)
+- [Rider Portal Repair Report](./GROVIA_RIDER_FIX_REPORT.md)
+- [PostgreSQL Production Database Migration](./GROVIA_DATABASE_MIGRATION.md)
+- [Payment Gateway & Razorpay Integration](./GROVIA_PAYMENT_INTEGRATION.md)
+- [Google Maps & Location Services](./GROVIA_MAPS_INTEGRATION.md)
+- [Courier & Logistics Integration Guide](./GROVIA_COURIER_INTEGRATION.md)
+- [India-Wide Serviceability & PIN Guide](./GROVIA_SERVICEABILITY_GUIDE.md)
+- [Security Hardening & Threat Model](./GROVIA_SECURITY_AUDIT.md)
+- [Production Deployment & Monitoring](./GROVIA_DEPLOYMENT_GUIDE.md)
+- [Setup & Runtime Guide](./GROVIA_SETUP_GUIDE.md)
+
+---
+
+## 8. Project Roadmap
+
+The implementation roadmap tracks feature status against verified source code:
+
+- [x] **Customer storefront foundation:** Verified with 16 departments, search, and category navigation.
+- [x] **Product catalogue foundation:** 100+ verified items with active CDN images, pricing, and nutritional info.
+- [x] **Customer, admin, and rider portal structure:** 3 isolated application experiences with Edge guards.
+- [x] **Product variants and category architecture:** Multi-variant support and stock thresholds.
+- [x] **Order management foundation:** Server-calculated subtotals, coupons, and atomic stock decrements.
+- [x] **Complete rider availability and delivery workflow verification:** Fully functional Online/Offline persistence, in-flight order lock, and random OTP verification.
+- [x] **Production PostgreSQL migration verification:** Dual-mode schema and pre-compiled DDL migrations ready.
+- [ ] **Live payment gateway integration:** Architecture, HMAC verification, and webhooks implemented; *BLOCKED: Requires live Razorpay merchant credentials*.
+- [ ] **Live Google Maps and GPS integration:** Client/server split and Haversine fallback active; *BLOCKED: Requires live Google Maps Platform API keys*.
+- [ ] **Courier API integration and end-to-end testing:** Manifesting engine and tracking timeline active; *BLOCKED: Requires live Delhivery/Shiprocket API tokens*.
+- [ ] **Production cloud deployment:** Build and health check verified; *BLOCKED: Requires cloud infrastructure provisioning*.
+- [ ] **Expanded nationwide fulfilment coverage:** 18 cities active; *PARTIAL: Adding additional Tier-2/3 fulfilment hubs*.
+
+---
+
+## 9. Author & License
+
+**Developed by:** Arshid Ahmad Malik  
+**GitHub:** [https://github.com/malikarshid](https://github.com/malikarshid)  
+**Repository:** [https://github.com/malikarshid/Grovia](https://github.com/malikarshid/Grovia)  
+**License:** MIT License. See [LICENSE](./LICENSE) for details.

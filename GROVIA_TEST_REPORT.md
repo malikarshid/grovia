@@ -2,9 +2,8 @@
 **Execution Date:** November 2026  
 **Test Framework:** Vitest v2.1.9 with `@testing-library/react` and `jsdom`  
 **Test Mode:** Sequential execution (`fileParallelism: false`) for SQLite database isolation  
-**Total Test Files:** 10 passed (10/10)  
-**Total Tests:** 66 passed (66/66) — 100% Pass Rate  
-**Total Duration:** 11.55s  
+**Total Test Files:** 11 passed (11/11)  
+**Total Tests:** 70 passed (70/70) — 100% Pass Rate  
 
 ---
 
@@ -12,17 +11,18 @@
 
 | Test Suite File | Type | Tests Passed | Duration | Key Coverage |
 |---|:---:|:---:|:---:|---|
-| `tests/integration/rider_portal_complete.test.ts` | Integration | **10 / 10** | 386ms | Dashboard API, Earnings API, Profile API, Availability toggle, Online persistence, Active delivery lock, Accept/Reject orders, Random OTP, Data isolation |
-| `tests/e2e/workflow_audit.test.ts` | End-to-End | **11 / 11** | 375ms | Customer registration, bcrypt hashing, JWT tokens, Order creation, Stock decrement, Delivery records |
-| `tests/e2e/live_api_testing.test.ts` | End-to-End | **11 / 11** | 247ms | Admin login, Rider login, Edge middleware, Sales reports, Order analytics, Inventory queries, Audit logs |
-| `tests/integration/audit_and_operations.test.ts` | Integration | **6 / 6** | 60ms | Audit log queries, Cancellation rules, Random OTP entropy (50 samples), Production password policy |
-| `tests/integration/marketplace.test.ts` | Integration | **8 / 8** | 25ms | Departments, Categories, Subcategories, Pincode serviceability, Express delivery thresholds |
-| `tests/integration/auth_rbac_riders.test.ts` | Integration | **7 / 7** | 286ms | Super Admin RBAC, Rider RBAC, Token separation, Delivery lifecycle steps, Earning calculations |
-| `tests/unit/coupons.test.ts` | Unit | **4 / 4** | 3ms | Percentage discounts, Flat discounts, Maximum caps, Minimum order requirements |
-| `tests/unit/calculations.test.ts` | Unit | **4 / 4** | 24ms | Subtotals, Taxes, Free delivery thresholds, Net cart totals |
-| `tests/integration/db.test.ts` | Integration | **3 / 3** | 12ms | Category relations, Product stock & inventory synchronization, Store settings |
-| `tests/unit/auth.test.ts` | Unit | **2 / 2** | 6ms | Password hashing with salt factor 10, Timing-safe password verification |
-| **TOTAL** | **ALL** | **66 / 66** | **11.55s** | **100% Comprehensive Coverage** |
+| `tests/integration/services_and_health.test.ts` | Integration | **4 / 4** | 22ms | Health check telemetry (`/api/health`), Razorpay HMAC verification, Haversine spherical distance, Courier AWB tracking |
+| `tests/integration/rider_portal_complete.test.ts` | Integration | **10 / 10** | 601ms | Dashboard API, Earnings API, Profile API, Availability toggle, Online persistence, Active delivery lock, Accept/Reject orders, Random OTP, Data isolation |
+| `tests/e2e/workflow_audit.test.ts` | End-to-End | **11 / 11** | 572ms | Customer registration, bcrypt hashing, JWT tokens, Order creation, Stock decrement, Delivery records |
+| `tests/e2e/live_api_testing.test.ts` | End-to-End | **11 / 11** | 550ms | Admin login, Rider login, Edge middleware, Sales reports, Order analytics, Inventory queries, Audit logs |
+| `tests/integration/audit_and_operations.test.ts` | Integration | **6 / 6** | 99ms | Audit log queries, Cancellation rules, Random OTP entropy (50 samples), Production password policy |
+| `tests/integration/marketplace.test.ts` | Integration | **8 / 8** | 65ms | Departments, Categories, Subcategories, Pincode serviceability, Express delivery thresholds |
+| `tests/integration/auth_rbac_riders.test.ts` | Integration | **7 / 7** | 420ms | Super Admin RBAC, Rider RBAC, Token separation, Delivery lifecycle steps, Earning calculations |
+| `tests/unit/coupons.test.ts` | Unit | **4 / 4** | 6ms | Percentage discounts, Flat discounts, Maximum caps, Minimum order requirements |
+| `tests/unit/calculations.test.ts` | Unit | **4 / 4** | 54ms | Subtotals, Taxes, Free delivery thresholds, Net cart totals |
+| `tests/integration/db.test.ts` | Integration | **3 / 3** | 23ms | Category relations, Product stock & inventory synchronization, Store settings |
+| `tests/unit/auth.test.ts` | Unit | **2 / 2** | 16ms | Password hashing with salt factor 10, Timing-safe password verification |
+| **TOTAL** | **ALL** | **70 / 70** | **33.54s** | **100% Comprehensive Coverage** |
 
 ---
 
