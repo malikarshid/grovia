@@ -1,6 +1,6 @@
 # GROVIA: PAYMENT GATEWAY ARCHITECTURE & RAZORPAY INTEGRATION
 **Application:** GROVIA — Fresh Living. Smarter Shopping.  
-**Service Implementation:** [`src/services/paymentService.ts`](file:///C:/Project/Grovia/src/services/paymentService.ts)  
+**Service Implementation:** [`src/services/paymentService.ts`](src/services/paymentService.ts)  
 **API Endpoints:**
 - `POST /api/payment/razorpay/order` — Server-side order generation
 - `POST /api/payment/razorpay/verify` — Cryptographic signature verification

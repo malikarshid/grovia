@@ -1,6 +1,6 @@
 # GROVIA: INDIA-WIDE SERVICEABILITY & PINCODE ROUTING
 **Application:** GROVIA — Fresh Living. Smarter Shopping.  
-**Service Implementation:** [`src/app/api/location/serviceability/route.ts`](file:///C:/Project/Grovia/src/app/api/location/serviceability/route.ts)  
+**Service Implementation:** [`src/app/api/location/serviceability/route.ts`](src/app/api/location/serviceability/route.ts)  
 **Database Model:** `ServiceablePinCode`
 
 ---

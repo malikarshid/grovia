@@ -70,15 +70,15 @@ Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | ForEach-Obj
 
 ---
 
-## 4. Default Access Credentials
+## 4. Initial Access Credentials Setup
 
-| Portal | URL | Username / Email | Password | Role |
+| Portal | URL | Configured Username / Email | Initial Password Setup | Role |
 |---|---|---|---|---|
-| **Delivery Rider Portal** | `/rider/login` | `rider_me` | `Rider@9682pw` | `RIDER` |
-| **Admin Management Portal** | `/admin/login` | `admin_me` | `9682pw` | `SUPER_ADMIN` |
-| **Customer Storefront** | `/auth/login` | `customer@grovia.in` | `Customer@123` | `CUSTOMER` |
+| **Delivery Rider Portal** | `/rider/login` | `rider_me` (or `RIDER_LOGIN_ID`) | Configured via `RIDER_INITIAL_PASSWORD` in `.env` | `RIDER` |
+| **Admin Management Portal** | `/admin/login` | `admin_me` (or `ADMIN_LOGIN_ID`) | Configured via `ADMIN_INITIAL_PASSWORD` in `.env` | `SUPER_ADMIN` |
+| **Customer Storefront** | `/auth/login` | Registered customer email | Set by customer during registration (`/auth/register`) | `CUSTOMER` |
 
-*Security Policy:* Default credentials are controlled via `ALLOW_DEFAULT_INITIAL_PASSWORD="true"` in `.env`. In production without this flag, administrators and riders are required to use personal secure passwords.
+*Security Policy:* Default fallback passwords are strictly disabled by default. Administrators and riders must set their personal secure credentials via `.env` or during onboarding.
 
 ---
 
@@ -87,13 +87,14 @@ Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | ForEach-Obj
 Run all automated quality, security, and integration checks:
 
 ```bash
-# 1. Validate Prisma schema
+# 1. Validate Prisma schemas (SQLite & PostgreSQL)
 npx prisma validate
+npx prisma validate --schema prisma/schema.postgresql.prisma
 
 # 2. Verify strict TypeScript compilation
 npx tsc --noEmit
 
-# 3. Execute the full Vitest suite (10 suites, 66 tests)
+# 3. Execute the full Vitest suite (11 suites, 73 tests)
 npm test
 
 # 4. Verify Next.js production compilation

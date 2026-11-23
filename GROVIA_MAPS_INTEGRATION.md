@@ -1,6 +1,6 @@
 # GROVIA: GOOGLE MAPS PLATFORM & LOCATION ARCHITECTURE
 **Application:** GROVIA — Fresh Living. Smarter Shopping.  
-**Service Implementation:** [`src/services/mapsService.ts`](file:///C:/Project/Grovia/src/services/mapsService.ts)  
+**Service Implementation:** [`src/services/mapsService.ts`](src/services/mapsService.ts)  
 **API Endpoints:**
 - `GET /api/location/distance` — Real driving distance or spherical Haversine computation
 - `GET /api/driver/location` — Rider live telemetry broadcast

@@ -2,8 +2,8 @@
 **Application:** GROVIA — Fresh Living. Smarter Shopping.  
 **Target Engine:** PostgreSQL 14+ / 15+ / 16+ (Supabase, Neon, AWS RDS, GCP Cloud SQL, or Self-Hosted)  
 **Development Engine:** SQLite 3 (`prisma/dev.db`)  
-**Schema Definition:** [`prisma/schema.postgresql.prisma`](file:///C:/Project/Grovia/prisma/schema.postgresql.prisma)  
-**Pre-Compiled DDL Migration:** [`prisma/migrations/0_init_postgresql/migration.sql`](file:///C:/Project/Grovia/prisma/migrations/0_init_postgresql/migration.sql)
+**Schema Definition:** [`prisma/schema.postgresql.prisma`](prisma/schema.postgresql.prisma)  
+**Pre-Compiled DDL Migration:** [`prisma/migrations/0_init_postgresql/migration.sql`](prisma/migrations/0_init_postgresql/migration.sql)
 
 ---
 
@@ -58,7 +58,7 @@ cp prisma/schema.postgresql.prisma prisma/schema.prisma
 ```bash
 npx prisma migrate deploy
 ```
-*Alternatively, execute the pre-compiled [`prisma/migrations/0_init_postgresql/migration.sql`](file:///C:/Project/Grovia/prisma/migrations/0_init_postgresql/migration.sql) directly using `psql`:*
+*Alternatively, execute the pre-compiled [`prisma/migrations/0_init_postgresql/migration.sql`](prisma/migrations/0_init_postgresql/migration.sql) directly using `psql`:*
 ```bash
 psql "$DATABASE_URL" -f prisma/migrations/0_init_postgresql/migration.sql
 ```

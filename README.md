@@ -135,14 +135,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 # Start development server
 npm run dev
 
-# Run full automated test suite (10 test suites, 66+ tests)
+# Run full automated test suite (11 test suites, 73 tests passing)
 npm test
 
 # Run strict TypeScript compilation check (0 errors)
 npx tsc --noEmit
 
-# Validate Prisma schema
+# Validate Prisma schemas (SQLite & PostgreSQL)
 npx prisma validate
+npx prisma validate --schema prisma/schema.postgresql.prisma
 
 # Compile optimized production build
 npm run build
@@ -158,20 +159,22 @@ npm run clean:ports
 
 ## 7. Project Documentation Index
 
-Detailed architectural and operational documentation is available in the repository:
+Detailed architectural, security, testing, and operational documentation is available in the repository:
 
-- [GROVIA Technical Completion Report](./GROVIA_COMPLETION_REPORT.md)
-- [Master Technical Audit & Verification](./GROVIA_MASTER_AUDIT.md)
-- [Automated Test Execution Report](./GROVIA_TEST_REPORT.md)
-- [Rider Portal Repair Report](./GROVIA_RIDER_FIX_REPORT.md)
+- [Ultimate Master Technical Audit & Scorecard](./GROVIA_ULTIMATE_AUDIT_REPORT.md)
+- [Comprehensive Git History & Hygiene Audit](./GROVIA_GIT_HISTORY_AUDIT.md)
+- [Project Changelog](./GROVIA_CHANGELOG.md)
+- [Feature Completion Matrix & Status](./GROVIA_FEATURE_COMPLETION_MATRIX.md)
+- [Staging & Production Database Setup](./GROVIA_DATABASE_SETUP.md)
 - [PostgreSQL Production Database Migration](./GROVIA_DATABASE_MIGRATION.md)
-- [Payment Gateway & Razorpay Integration](./GROVIA_PAYMENT_INTEGRATION.md)
-- [Google Maps & Location Services](./GROVIA_MAPS_INTEGRATION.md)
-- [Courier & Logistics Integration Guide](./GROVIA_COURIER_INTEGRATION.md)
-- [India-Wide Serviceability & PIN Guide](./GROVIA_SERVICEABILITY_GUIDE.md)
-- [Security Hardening & Threat Model](./GROVIA_SECURITY_AUDIT.md)
-- [Production Deployment & Monitoring](./GROVIA_DEPLOYMENT_GUIDE.md)
-- [Setup & Runtime Guide](./GROVIA_SETUP_GUIDE.md)
+- [Environment Variables Specification](./GROVIA_ENVIRONMENT_VARIABLES.md)
+- [Pre-Staging Security Architecture Review](./GROVIA_SECURITY_REVIEW.md)
+- [Real-World Workflow & Persistence Test Report](./GROVIA_REAL_WORKFLOW_TEST_REPORT.md)
+- [Staging Deployment & Operational Readiness Report](./GROVIA_STAGING_DEPLOYMENT_REPORT.md)
+- [Production Readiness & Go-Live Criteria Report](./GROVIA_PRODUCTION_READINESS_REPORT.md)
+- [Database Backup & Disaster Recovery Playbook](./GROVIA_BACKUP_AND_RECOVERY.md)
+- [REST API Specification & Endpoint Documentation](./GROVIA_API_DOCUMENTATION.md)
+- [Setup, Runtime & Operations Guide](./GROVIA_SETUP_GUIDE.md)
 
 ---
 

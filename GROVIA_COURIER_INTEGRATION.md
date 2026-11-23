@@ -1,6 +1,6 @@
 # GROVIA: COURIER & LOGISTICS INTEGRATION GUIDE
 **Application:** GROVIA — Fresh Living. Smarter Shopping.  
-**Service Implementation:** [`src/services/courierService.ts`](file:///C:/Project/Grovia/src/services/courierService.ts)  
+**Service Implementation:** [`src/services/courierService.ts`](src/services/courierService.ts)  
 **API Endpoints:**
 - `GET /api/logistics/track/[awb]` — AWB tracking timeline & checkpoint updates
 - `POST /api/orders` — Automatic shipment manifestation for nationwide destinations
