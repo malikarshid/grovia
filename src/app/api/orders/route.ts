@@ -5,6 +5,8 @@ import { getSessionFromRequest, hasAdminRole } from '@/lib/auth';
 import { calculateTotals } from '@/lib/utils';
 import { PaymentService } from '@/services/paymentService';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const session = getSessionFromRequest(req);

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionFromRequest } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to resolve & validate rider
 async function getValidatedRider(req: NextRequest) {
   const session = getSessionFromRequest(req);

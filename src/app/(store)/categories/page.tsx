@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
 import { ChevronRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     where: { isActive: true },

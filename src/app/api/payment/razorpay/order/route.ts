@@ -3,6 +3,8 @@ import { PaymentService } from '@/services/paymentService';
 import { getSessionFromRequest } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const session = getSessionFromRequest(req);
