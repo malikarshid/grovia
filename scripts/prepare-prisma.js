@@ -14,10 +14,14 @@ const envPath = path.join(__dirname, '..', '.env');
 let dbUrl = process.env.DATABASE_URL || process.env.POSTGRESQL_URL;
 
 if (!dbUrl && fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const match = envContent.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
-  if (match) {
-    dbUrl = match[1];
+  try {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const match = envContent.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
+    if (match) {
+      dbUrl = match[1];
+    }
+  } catch (err) {
+    // Ignore error reading .env
   }
 }
 
@@ -31,6 +35,11 @@ const isPostgresUrl = dbUrl && (dbUrl.startsWith('postgres://') || dbUrl.startsW
 let targetProvider = 'postgresql';
 if (!isVercel && !isProduction && dbUrl && (dbUrl.startsWith('file:') || dbUrl.startsWith('sqlite:'))) {
   targetProvider = 'sqlite';
+}
+
+// Fallback for Vercel/CI builds where DATABASE_URL might be unset in secondary projects
+if ((isVercel || isProduction) && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'postgresql://placeholder:placeholder@localhost:5432/grovia?schema=public';
 }
 
 console.log(`[prepare-prisma] Environment: Vercel=${isVercel}, NodeEnv=${process.env.NODE_ENV || 'development'}`);
@@ -49,3 +58,4 @@ if (fs.existsSync(schemaPath)) {
   fs.writeFileSync(schemaPath, schemaContent, 'utf8');
   console.log(`[prepare-prisma] Updated ${schemaPath} to provider="${targetProvider}".`);
 }
+
